@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reservations Grid</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<div class="container2">
+    <h1>Tabla de reservas</h1>
+
+    <!-- Date Selector and Current Date Display -->
+    <form method="get" class="date-form">
+        <label for="date">Seleccionar fecha:</label>
+        <input type="date" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+        <button type="submit">Ver</button>
+    </form>
+
+    <p class="selected-date">Viendo reservas para: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
+
+    <h2>Crear reserva</h2>
+    <form method="post" action="{% url 'reservation_create' %}">
+        {% csrf_token %}
+        <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+        <label for="table">Mesa:</label>
+        <select name="table" required>
+            {% for table in tables %}
+                <option value="{{ table.id }}">{{ table }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="name">Nombre:</label>
+        <input type="text" name="name" required>
+
+        <label for="hour">Hora (HH:MM):</label>
+        <input type="time" name="hour" required>
+
+        <label for="status">Estado de mesa:</label>
+        <select name="status">
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmada</option>
+            <option value="cancelled">Cancelada</option>
+        </select>
+
+        <button type="submit">Crear reserva</button>
+    </form>
+
+<div class="grid">
+    {% for table, info in table_status.items %}
+        <div class="table-box {% if info.status == 'Reserved' %}reserved{% else %}Available{% endif %}">
+            <strong>Mesa {{ table.id }}</strong><br>
+            Capacidad: {{ table.capacity }}<br>
+
+            {% if info.status == 'Reserved' %}
+                {% for reservation in info.reservations %}
+                    <hr>
+                    <div>
+                        {{ reservation.name }}<br>
+                        {{ reservation.start_time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}
+                        <form method="post" action="{% url 'reservation_delete' reservation.id %}">
+                            {% csrf_token %}                                
+                            <button type="submit">Borrar</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <form method="post" action="{% url 'reservation_create' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="table" value="{{ table.id }}">
+                    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+
+                    <input type="time" name="hour" required>
+                    <input type="text" name="name" placeholder="Nombre" required>
+                    <input type="hidden" name="status" value="confirmed">
+
+                    <button type="submit">Reservar</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+    <p><a href="{% url 'table_list' %}"class="btn">Manejo de mesas</a></p>    
+    <p><a href="{% url 'homepage' %}"class="btn">Volver a inicio</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table List</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Manejo de mesas</h1>
+
+        <form method="post" action="{% url 'table_create' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Agregar mesa</button>
+        </form>
+
+        <h2>Mesas existentes</h2>
+        <div class="table-card-grid">
+            {% for table in tables %}
+                <div class="table-card">
+                    <p><strong>Mesa {{ table.id }}</strong></p>
+                    <p>Cantidad: {{ table.capacity }} personas</p>
+                    <form method="post" action="{% url 'table_delete' table.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </div>
+            {% empty %}
+                <p>No hay mesas creadas todavía.</p>
+            {% endfor %}
+        </div>
+
+        <p><a href="{% url 'table_grid' %}" class="btn">Tabla de reservas</a></p>
+        <p><a href="{% url 'homepage' %}" class="btn">Volver a inicio</a></p>
+    </div>
+</body>
+</html>

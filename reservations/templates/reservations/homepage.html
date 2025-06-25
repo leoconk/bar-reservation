@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bar reservations - Home</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            font-family: Garamond, serif;
+            text-align: center;
+            margin: 40px;
+        }
+        .form-container {
+            display: inline-block;
+            margin: 40px;
+            padding: 40px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
+            background-color: rgb(89, 129, 141);
+        }
+        .form-container-register {
+            display: inline-block;
+            margin: 40px;
+            padding: 40px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
+            background-color: rgb(119, 149, 161);
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 150px;
+        }
+        h1 {
+            margin-bottom: 40px;
+        }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+        .messages li {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            color: white;
+        }
+        .messages li.success {
+            background-color:rgb(63, 131, 65);
+        }
+        .messages li.error {
+            background-color:rgb(155, 70, 63);
+        }
+    </style>
+</head>
+<body>
+    <h1>Reservas</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <p>Ingresaste como <strong>{{ user.username }}</strong></p>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+        <br>
+        <a href="{% url 'table_grid' %}" class="btn">Tabla de reservas</a> |
+        <a href="{% url 'table_list' %}" class="btn">Manejo de mesas</a>
+
+    {% else %}
+        <div class="form-container">
+            <h2>Login</h2>
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                {{ login_form.as_p }}
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <div class="form-container-register">
+            <h2>Registrarse</h2>
+            <form method="post" action="{% url 'create_user' %}">
+                {% csrf_token %}
+                {{ register_form.as_p }}
+                <button type="submit">Crear cuenta</button>
+            </form>
+        </div>
+    {% endif %}
+</body>
+</html>
