@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 
 class Table(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     id = models.PositiveIntegerField(primary_key=True)
     capacity = models.PositiveIntegerField()
 

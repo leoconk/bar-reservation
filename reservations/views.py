@@ -61,31 +61,30 @@ def create_user(request):
 
 @login_required
 def table_list(request):
-    tables = Table.objects.all().order_by('id')
+    tables = Table.objects.filter(user=request.user).order_by('id')
     form = TableForm()
     return render(request, 'reservations/tablelist.html', {'tables': tables, 'form': form})
-
 
 @login_required
 def table_create(request):
     if request.method == 'POST':
         form = TableForm(request.POST)
         if form.is_valid():
-            form.save()
+            table = form.save(commit=False)
+            table.user = request.user  # assign current user
+            table.save()
     return redirect('table_list')
-
 
 @login_required
 def table_delete(request, pk):
-    table = get_object_or_404(Table, pk=pk)
+    table = get_object_or_404(Table, pk=pk, user=request.user)
     if request.method == 'POST':
         table.delete()
     return redirect('table_list')
 
-
 @login_required
 def table_update(request, pk):
-    table = get_object_or_404(Table, pk=pk)
+    table = get_object_or_404(Table, pk=pk, user=request.user)  # Only fetch user's own table
     if request.method == 'POST':
         form = TableForm(request.POST, instance=table)
         if form.is_valid():
@@ -94,7 +93,6 @@ def table_update(request, pk):
     else:
         form = TableForm(instance=table)
     return render(request, 'reservations/table_form.html', {'form': form})
-
 
 @login_required
 def table_grid(request):
@@ -106,7 +104,7 @@ def table_grid(request):
         except ValueError:
             pass
 
-    tables = Table.objects.all().order_by('id')
+    tables = Table.objects.filter(user=request.user).order_by('id')
     table_status = {}
 
     for table in tables:
@@ -146,7 +144,7 @@ def reservation_create(request):
         except ValueError:
             return HttpResponseBadRequest("Invalid date or time format.")
 
-        table = get_object_or_404(Table, pk=table_id)
+        table = get_object_or_404(Table, pk=table_id, user=request.user)
 
         reservation = Reservation(
             user=request.user,
