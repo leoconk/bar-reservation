@@ -111,6 +111,7 @@ def table_grid(request):
 
     for table in tables:
         reservations = Reservation.objects.filter(
+            user=request.user,
             table=table,
             start_time__date=selected_date
         ).order_by('start_time')
@@ -148,6 +149,7 @@ def reservation_create(request):
         table = get_object_or_404(Table, pk=table_id)
 
         reservation = Reservation(
+            user=request.user,
             table=table,
             name=name,
             start_time=start_time,
@@ -164,7 +166,7 @@ def reservation_create(request):
 
 @login_required
 def reservation_update(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+    reservation = get_object_or_404(Reservation, pk=pk, user=request.user)
     if request.method == 'POST':
         form = ReservationForm(request.POST, instance=reservation)
         if form.is_valid():
@@ -179,7 +181,7 @@ def reservation_update(request, pk):
 
 @login_required
 def reservation_delete(request, pk):
-    reservation = get_object_or_404(Reservation, pk=pk)
+    reservation = get_object_or_404(Reservation, pk=pk, user=request.user)
     if request.method == 'POST':
         reservation.delete()
     return redirect('table_grid')
